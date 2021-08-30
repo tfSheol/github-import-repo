@@ -52,6 +52,8 @@ function help() {
     echo
     echo " cmd:"
     echo "    import <repository_url>           import repository into Github"
+    echo "    import list <[..,..,..]>"
+    echo "    import file <file_path>"
     exit 0
 }
 
@@ -95,9 +97,9 @@ if [[ "${config['private']}" != "" ]]; then
     gh_extra_parameters+="--private "
 fi
 
-if [[ " $1 $2 " =~ (import ([a-z]+)://(.*)/(.*).git) ]]; then
-    git clone --bare $2
-    tmp_folder=${BASH_REMATCH[4]}
+function import_repository() {
+    tmp_folder=$2
+    git clone --bare $1
     setParam "repository.name" ${tmp_folder}
     cd "${tmp_folder}.git"
     setParam "github.url" "git@github.com:${config['github.user']}/${tmp_folder}.git"
@@ -109,6 +111,32 @@ if [[ " $1 $2 " =~ (import ([a-z]+)://(.*)/(.*).git) ]]; then
     git push --mirror ${param['github.url']}
     cd ..
     rm -rf "${tmp_folder}.git"
+}
+
+if [[ " $1 $2 $3 " =~ (import file ([^' ']+)) ]]; then
+    for git in $(cat ${BASH_REMATCH[2]}); do
+        if [[ " $git " =~ ([a-z]+)://(.*)/(.*).git ]]; then
+            echo "# Import ${BASH_REMATCH[3]}"
+            import_repository "$git" ${BASH_REMATCH[3]}
+        fi
+    done
+    exit 0
+fi
+
+if [[ " $1 $2 $3 " =~ (import list (\[([^' ']+)\])) ]]; then
+    gits=${BASH_REMATCH[3]}
+    for git in ${gits//,/ }; do
+        if [[ " $git " =~ ([a-z]+)://(.*)/(.*).git ]]; then
+            echo "# Import ${BASH_REMATCH[3]}"
+            import_repository "$git" ${BASH_REMATCH[3]}
+        fi
+    done
+    exit 0
+fi
+
+if [[ " $1 $2 " =~ (import ([a-z]+)://(.*)/(.*).git) ]]; then
+    echo "# Import ${BASH_REMATCH[4]}"
+    import_repository "$2" ${BASH_REMATCH[4]}
     exit 0
 fi
 
