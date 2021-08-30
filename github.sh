@@ -97,15 +97,19 @@ if [[ "${config['private']}" != "" ]]; then
     gh_extra_parameters+="--private "
 fi
 
+if [[ " $@ " =~ --organization=([^' ']+) ]]; then
+    setParam "organization.name" ${BASH_REMATCH[1]}
+fi
+
 function import_repository() {
     tmp_folder=$2
     git clone --bare $1
     setParam "repository.name" ${tmp_folder}
     cd "${tmp_folder}.git"
     setParam "github.url" "git@github.com:${config['github.user']}/${tmp_folder}.git"
-    if [[ " $@ " =~ --organization ]]; then
-        setParam "repository.name" "${config['organization.name']}/${tmp_folder}"
-        setParam "github.url" "git@github.com:${config['organization.name']}/${tmp_folder}.git"
+    if [[ ${param['organization.name']} != "" ]]; then
+        setParam "repository.name" "${param['organization.name']}/${tmp_folder}"
+        setParam "github.url" "git@github.com:${param['organization.name']}/${tmp_folder}.git"
     fi
     gh repo create ${param['repository.name']} ${gh_extra_parameters}
     git push --mirror ${param['github.url']}

@@ -24,6 +24,8 @@ Usage: ./github.sh {build <all|> | other} [options...]
 
  cmd:
     import <repository_url>           import repository into Github
+    import list <[..,..,..]>
+    import file <file_path>
 ```
 
 ## Usage examples
@@ -33,7 +35,7 @@ Usage: ./github.sh {build <all|> | other} [options...]
 $ ./github.sh import ssh://git@gitlab.com/group/app.git
 
 # Import into Github organization
-$ ./github.sh import ssh://git@gitlab.com/group/app.git --organization
+$ ./github.sh import ssh://git@gitlab.com/group/app.git --organization=<organization_name>
 ```
 
 ## Steps
